@@ -14,8 +14,6 @@
 
 class Socialmedia_Instagram_Controller extends Controller
 {
-	const API_URL = "https://graph.facebook.com/search?";
-
 	var $service = null;
 
 	public function __construct() {
@@ -32,7 +30,7 @@ class Socialmedia_Instagram_Controller extends Controller
 	*/
 	public function search($keywords, $location, $since)
 	{
-		require dirname(__DIR__) . '/libraries/Instagram-PHP-API-master/instagram.class.php';
+		require_once dirname(__DIR__) . '/libraries/Instagram-PHP-API-master/instagram.class.php';
 
 		$auth_config = array(
 		    'apiKey'        => socialmedia_helper::getSetting('instagram_client_id'),
@@ -40,10 +38,12 @@ class Socialmedia_Instagram_Controller extends Controller
 		    'apiCallback'	=> null
 		);
 
-		$instagram = new Instagram($auth_config);			
+		$instagram = new Instagram($auth_config);
 
 		foreach ($keywords as $keyword)
 		{
+			$keyword = str_replace("#", "", $keyword); //instagram doesn't like API calls with hash
+
 			$settings = ORM::factory('socialmedia_settings')->where('setting', 'instagram_max_tag_' . $keyword)->find();
 
 			$next_max_id = null;
@@ -53,14 +53,24 @@ class Socialmedia_Instagram_Controller extends Controller
 
 		    $results = $instagram->getTagMedia($keyword, 0, $next_max_id);
 
-			// parse our lovely results
-			$result = $this->parse($results);
+		    
+		    if ($results !== null)
+		    {
 
-			// Save new highest id
-			$settings->setting =  'instagram_max_tag_' . $keyword;
-			$settings->value = $results->pagination->next_max_id;
-			$settings->save();
+				// parse our lovely results
+				$result = $this->parse($results);
+
+
+				// Save new highest id
+
+				if (isset($results->pagination->next_max_id)) {
+					$settings->setting =  'instagram_max_tag_' . $keyword;
+					$settings->value = $results->pagination->next_max_id;
+					$settings->save();
+				}
+			}
 		}	
+
 	}
 
 
