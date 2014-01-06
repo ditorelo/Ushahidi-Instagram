@@ -18,4 +18,4 @@ UshahidiSocialMedia plugin (https://github.com/ditorelo/Ushahidi-SocialMedia)
 1. Create a directory called "socialmedia_instagram" inside your /plugins/ directory
 2. Copy the entire all files directory into your /plugins/socialmedia_instagram directory.
 3. Activate the plugin.
-3. Go to Settings > SocialMedia > Instagram to enter your API credentials.
+4. Go to Settings > SocialMedia > Instagram to enter your API credentials.
