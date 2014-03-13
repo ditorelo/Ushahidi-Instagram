@@ -65,7 +65,7 @@ class Socialmedia_Instagram_Controller extends Controller
 
 				if (isset($results->pagination->next_min_id)) {
 					$settings->setting =  'instagram_min_id_tag_' . $keyword;
-					$settings->value = $results->pagination->next_max_id;
+					$settings->value = $results->pagination->next_min_id;
 					$settings->save();
 				}
 			}
