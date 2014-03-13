@@ -4,7 +4,7 @@
  * Instagram API class
  * API Documentation: http://instagram.com/developer/
  * Class Documentation: https://github.com/cosenary/Instagram-PHP-API/blob/master/README.markdown
- * 
+ *
  * @author Christian Metz
  * @since 30.10.2011
  * @copyright Christian Metz - MetzWeb Networks 2012
@@ -31,42 +31,42 @@ class Instagram {
 
   /**
    * The Instagram API Key
-   * 
+   *
    * @var string
    */
   private $_apikey;
 
   /**
    * The Instagram OAuth API secret
-   * 
+   *
    * @var string
    */
   private $_apisecret;
 
   /**
    * The callback URL
-   * 
+   *
    * @var string
    */
   private $_callbackurl;
 
   /**
    * The user access token
-   * 
+   *
    * @var string
    */
   private $_accesstoken;
 
   /**
    * Available scopes
-   * 
+   *
    * @var array
    */
   private $_scopes = array('basic', 'likes', 'comments', 'relationships');
 
   /**
    * Available actions
-   * 
+   *
    * @var array
    */
   private $_actions = array('follow', 'unfollow', 'block', 'unblock', 'approve', 'deny');
@@ -264,12 +264,15 @@ class Instagram {
    * @param integer [optional] $limit     Limit of returned results
    * @return mixed
    */
-  public function getTagMedia($name, $limit = 0, $max_tag_id = null) {
+  public function getTagMedia($name, $limit = 0, $max_tag_id = null, $min_id = null) {
     $params = array('count' => $limit);
 
     // HACK
     if (! is_null($max_tag_id)) {
       $params["max_tag_id"] = $max_tag_id;
+    }
+    if (! is_null($min_id)) {
+      $params["min_id"] = $max_tag_id;
     }
     // END HACK-ISH
 
@@ -321,7 +324,7 @@ class Instagram {
       'redirect_uri'    => $this->getApiCallback(),
       'code'            => $code
     );
-    
+
     $result = $this->_makeOAuthCall($apiData);
     return (false === $token) ? $result : $result->access_token;
   }
@@ -347,21 +350,21 @@ class Instagram {
         throw new Exception("Error: _makeCall() | $function - This method requires an authenticated users access token.");
       }
     }
-    
+
     if (isset($params) && is_array($params)) {
       $paramString = '&' . http_build_query($params);
     } else {
       $paramString = null;
     }
-    
+
     $apiCall = self::API_URL . $function . $authMethod . (('GET' === $method) ? $paramString : null);
-    
+
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $apiCall);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-    
+
     if ('POST' === $method) {
       curl_setopt($ch, CURLOPT_POST, count($params));
       curl_setopt($ch, CURLOPT_POSTFIELDS, ltrim($paramString, '&'));
@@ -376,7 +379,7 @@ class Instagram {
 
     $jsonData = curl_exec($ch);
     curl_close($ch);
-    
+
     return json_decode($jsonData);
   }
 
@@ -388,28 +391,28 @@ class Instagram {
    */
   private function _makeOAuthCall($apiData) {
     $apiHost = self::API_OAUTH_TOKEN_URL;
-    
+
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $apiHost);
     curl_setopt($ch, CURLOPT_POST, count($apiData));
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($apiData));
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    
+
     $jsonData = curl_exec($ch);
-    
+
     if (false === $jsonData) {
       echo 'Curl error: ' . curl_error($ch);
     }
-    
+
     curl_close($ch);
-    
+
     return json_decode($jsonData);
   }
 
   /**
    * Access Token Setter
-   * 
+   *
    * @param object|string $data
    * @return void
    */
@@ -420,7 +423,7 @@ class Instagram {
 
   /**
    * Access Token Getter
-   * 
+   *
    * @return string
    */
   public function getAccessToken() {
@@ -429,7 +432,7 @@ class Instagram {
 
   /**
    * API-key Setter
-   * 
+   *
    * @param string $apiKey
    * @return void
    */
@@ -439,7 +442,7 @@ class Instagram {
 
   /**
    * API Key Getter
-   * 
+   *
    * @return string
    */
   public function getApiKey() {
@@ -448,8 +451,8 @@ class Instagram {
 
   /**
    * API Secret Setter
-   * 
-   * @param string $apiSecret 
+   *
+   * @param string $apiSecret
    * @return void
    */
   public function setApiSecret($apiSecret) {
@@ -458,16 +461,16 @@ class Instagram {
 
   /**
    * API Secret Getter
-   * 
+   *
    * @return string
    */
   public function getApiSecret() {
     return $this->_apisecret;
   }
-  
+
   /**
    * API Callback URL Setter
-   * 
+   *
    * @param string $apiCallback
    * @return void
    */
@@ -477,7 +480,7 @@ class Instagram {
 
   /**
    * API Callback URL Getter
-   * 
+   *
    * @return string
    */
   public function getApiCallback() {

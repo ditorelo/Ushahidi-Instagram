@@ -3,13 +3,13 @@
  * Facebook Controller
  *
  * PHP version 5
- * LICENSE: This source file is subject to LGPL license 
+ * LICENSE: This source file is subject to LGPL license
  * that is available through the world-wide-web at the following URI:
  * http://www.gnu.org/copyleft/lesser.html
- * @author	   Ushahidi Team <team@ushahidi.com> 
+ * @author	   Ushahidi Team <team@ushahidi.com>
  * @package	   Ushahidi - http://source.ushahididev.com
  * @copyright  Ushahidi - http://www.ushahidi.com
- * @license	   http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License (LGPL) 
+ * @license	   http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License (LGPL)
 */
 
 class Socialmedia_Instagram_Controller extends Controller
@@ -30,6 +30,7 @@ class Socialmedia_Instagram_Controller extends Controller
 	*/
 	public function search($keywords, $location, $since)
 	{
+
 		require_once dirname(__DIR__) . '/libraries/Instagram-PHP-API-master/instagram.class.php';
 
 		$auth_config = array(
@@ -44,16 +45,15 @@ class Socialmedia_Instagram_Controller extends Controller
 		{
 			$keyword = str_replace("#", "", $keyword); //instagram doesn't like API calls with hash
 
-			$settings = ORM::factory('socialmedia_settings')->where('setting', 'instagram_max_tag_' . $keyword)->find();
+			$settings = ORM::factory('socialmedia_settings')->where('setting', 'instagram_min_id_tag_' . $keyword)->find();
 
-			$next_max_id = null;
+			$next_min_id = null;
 			if (! empty($settings->value)) {
-				$next_max_id = $settings->value;
+				$next_min_id = $settings->value;
 			}
 
-		    $results = $instagram->getTagMedia($keyword, 0, $next_max_id);
+		    $results = $instagram->getTagMedia($keyword, 0, null, $next_min_id);
 
-		    
 		    if ($results !== null)
 		    {
 
@@ -63,13 +63,13 @@ class Socialmedia_Instagram_Controller extends Controller
 
 				// Save new highest id
 
-				if (isset($results->pagination->next_max_id)) {
-					$settings->setting =  'instagram_max_tag_' . $keyword;
+				if (isset($results->pagination->next_min_id)) {
+					$settings->setting =  'instagram_min_id_tag_' . $keyword;
 					$settings->value = $results->pagination->next_max_id;
 					$settings->save();
 				}
 			}
-		}	
+		}
 
 	}
 
@@ -87,27 +87,27 @@ class Socialmedia_Instagram_Controller extends Controller
 			$entry = Socialmedia_Message_Model::getMessage($s->id, $this->service->id);
 
 			// don't resave messages we already have
-			if (! $entry->loaded) 
-			{				
-				if ( ! is_null($s->caption)) 
+			if (! $entry->loaded)
+			{
+				if ( ! is_null($s->caption))
 				{
 					$message = $s->caption->text;
-				} 
-				else 
+				}
+				else
 				{
 					$message = "[" . Kohana::lang('instagram.empty') . "]";
 				}
 
 				// set message data
 				$entry->setServiceId($this->service->id);
-				$entry->setMessageFrom($this->service->service_name);				
+				$entry->setMessageFrom($this->service->service_name);
 				$entry->setMessageLevel($entry::STATUS_TOREVIEW);
 				$entry->setMessageId($s->id);
 				$entry->setMessageDetail($message);
 				$entry->setMessageDate(date("Y-m-d H:i:s", $s->created_time));
 
 				$entry->setAuthor(
-					$s->user->id, 
+					$s->user->id,
 					$s->user->full_name,
 					null,
 					$s->user->username
@@ -120,7 +120,7 @@ class Socialmedia_Instagram_Controller extends Controller
 				// geo data
 				if (isset($s->location))
 				{
-					if (!empty($s->location->latitude)) 
+					if (!empty($s->location->latitude))
 					{
 						$entry->setCoordinates($s->location->latitude, $s->location->longitude);
 					}
